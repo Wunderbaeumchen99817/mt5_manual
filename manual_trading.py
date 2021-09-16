@@ -12,6 +12,7 @@ import datetime
 SYMBOL = '[DAX30]'
 TRADE_RISK = 0.4
 SMA = 50
+SL = 500
 TIMEFRAME = mt5.TIMEFRAME_M1
 volume = 0.5
 
@@ -23,6 +24,7 @@ point = mt5.symbol_info(SYMBOL).point
 
 def buy():
     print("buy")
+    tick=mt5.symbol_info_tick(SYMBOL)._asdict()
     request = {}
     active_order = mt5.positions_get(symbol = SYMBOL)
 
@@ -46,6 +48,7 @@ def buy():
                     "action": mt5.TRADE_ACTION_DEAL,
                     "symbol": SYMBOL,
                     "volume": volume,
+                    "sl": tick['bid'] - SL * point,
                     "type": mt5.ORDER_TYPE_BUY,
                     "magic": 10,
                     "comment": "manual-trade",
@@ -59,6 +62,7 @@ def sell():
     print("sell")
     request = {}
     active_order = mt5.positions_get(symbol = SYMBOL)
+    tick=mt5.symbol_info_tick(SYMBOL)._asdict()
 
     if(len(active_order) != 0):  
         df=pd.DataFrame(list(active_order),columns=active_order[0]._asdict().keys())
@@ -82,6 +86,7 @@ def sell():
                     "volume": volume,
                     "type": mt5.ORDER_TYPE_SELL,
                     "magic": 10,
+                    "sl": tick['ask'] + SL * point,
                     "comment": "manual-trade",
                     "type_filling": mt5.ORDER_FILLING_IOC,
                 }
@@ -147,11 +152,11 @@ def on_press(key):
         
 
 def on_release(key):
-    if(str(key) == 'Key.space'):
+    if(str(key) == 'Key.right'):
             sl()
-    if key == keyboard.Key.esc:
+    """if key == keyboard.Key.esc:
         # Stop listener
-        return False
+        return False"""
 
 print("""Controls:
 *: sell
